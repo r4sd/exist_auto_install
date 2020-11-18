@@ -69,11 +69,11 @@ cd /opt/exist
 pip install -r requirements.txt
 
 ## Change settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_NAME', 'intelligence_db')/intelligence_db/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_USER'),/exist/g" intelligence/settings.py
+sed -i -e "s/os.environ.get('EXIST_DB_NAME', 'intelligence_db')/'intelligence_db'/g" intelligence/settings.py
+sed -i -e "s/os.environ.get('EXIST_DB_USER'),/'exist'/g" intelligence/settings.py
 sed -i -e "s/os.environ.get('EXIST_DB_PASSWORD')/${DBPASSWORD_EXIST}/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_HOST', 'localhost')/${DBHOST}/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_PORT', '3306')/3306/g" intelligence/settings.py
+sed -i -e "s/os.environ.get('EXIST_DB_HOST', 'localhost')/'${DBHOST}'/g" intelligence/settings.py
+sed -i -e "s/os.environ.get('EXIST_DB_PORT', '3306')/'3306'/g" intelligence/settings.py
 sed -i -e "s/\"SET CHARACTER SET utf8mb4;\"/\"SET CHARACTER SET utf8mb4;\"\n                            \"SET sql_mode='STRICT_TRANS_TABLES';\"/g" intelligence/settings.py
 
 ## Django initial setting
@@ -96,23 +96,28 @@ systemctl start redis
 systemctl enable redis
 
 ## Make celery config
-cat <<EOL >> /etc/sysconfig/celery
+cat <<"EOL" >> /etc/sysconfig/celery
 # Name of nodes to start
 # here we have a single node
 CELERYD_NODES="localhost"
+
 # or we could have three nodes:
 #CELERYD_NODES="w1 w2 w3"
 # Absolute or relative path to the 'celery' command:
 CELERY_BIN="/root/.pyenv/shims/celery"
+
 # App instance to use
 # comment out this line if you don't use an app
 CELERY_APP="intelligence"
+
 # or fully qualified:
 #CELERY_APP="proj.tasks:app"
 # How to call manage.py
 CELERYD_MULTI="multi"
+
 # Extra command-line arguments to the worker
 CELERYD_OPTS="--time-limit=300 --concurrency=8"
+
 # - %n will be replaced with the first part of the nodename.
 # - %I will be replaced with the current child process index
 # and is important when using the prefork pool to avoid race conditions.
@@ -121,10 +126,11 @@ CELERYD_LOG_FILE="/var/log/celery/%n%I.log"
 CELERYD_LOG_LEVEL="INFO"
 EOL
 
-cat <<EOL >> /etc/systemd/system/celery.service
+cat <<"EOL" >> /etc/systemd/system/celery.service
 [Unit]
 Description=Celery Service
 After=network.target
+
 [Service]
 Type=forking
 User=root
@@ -139,6 +145,7 @@ ExecStop=/bin/sh -c '${CELERY_BIN} multi stopwait ${CELERYD_NODES} \
 ExecReload=/bin/sh -c '${CELERY_BIN} multi restart ${CELERYD_NODES} \
 -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
 --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+
 [Install]
 WantedBy=multi-user.target
 EOL
@@ -146,7 +153,7 @@ EOL
 mkdir /var/log/celery; chown root:root /var/log/celery
 mkdir /var/run/celery; chown root:root /var/run/celery
 
-cat <<EOL >> /etc/tmpfiles.d/exist.conf
+cat <<"EOL" >> /etc/tmpfiles.d/exist.conf
 #Type  Path               Mode  UID        GID         Age  Argument
 d      /var/run/celery    0755  root  root  -
 EOL
@@ -180,6 +187,7 @@ cat <<EOL >> /etc/systemd/system/exist.service
 [Unit]
 Description = EXIST
 After = celery.service
+
 [Service]
 WorkingDirectory=/opt/exist
 ExecStart=/root/.pyenv/shims/python3 manage.py runserver 0.0.0.0:8000
@@ -187,6 +195,7 @@ Restart=always
 Type=simple
 KillMode=control-group
 Restart=on-failure
+
 [Install]
 WantedBy=multi-user.target
 EOL
