@@ -198,19 +198,3 @@ systemctl enable exist.service
 
 echo "Admin (root) DB Password: ${DBPASSWORD_ADMIN}"
 echo "User (exist) DB Password: ${DBPASSWORD_EXIST}"
-
-
-
-
-
-cd /var/lib/mysql
-rm -fr ./*
-
-pip uninstall -r exist/requirements.txt -y
-firewall-cmd --zone=public --remove-port=8000/tcp --permanent
-firewall-cmd --reload
-rm -f /etc/sysconfig/celery /etc/systemd/system/celery.service /etc/systemd/system/exist.service
-yum remove redis mariadb mariadb-server wkhtmltopdf xorg-x11-server-Xvfb -y
-vim /etc/yum/pluginconf.d/fastestmirror.conf
-rm -fr exist/
-reboot
