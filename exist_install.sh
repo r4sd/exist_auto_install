@@ -72,19 +72,20 @@ pip install -r requirements.txt
 sed -i -e "s/.split('|')//g" intelligence/settings.py
 sed -i -e "s/\"SET CHARACTER SET utf8mb4;\"/\"SET CHARACTER SET utf8mb4;\"\n                            \"SET sql_mode='STRICT_TRANS_TABLES';\"/g" intelligence/settings.py
 
-## Django initial setting
-python3 manage.py makemigrations exploit reputation threat threat_hunter twitter twitter_hunter news news_hunter vuln
-python3 manage.py migrate
-
 ## .env initial setting
 cp .env.example .env
 SECRET_KEY=$(python3 keygen.py)
+
 #HOST_IP=$(ip route get 8.8.8.8 | awk -F"src " 'NR==1{split($2,a," ");print a[1]}')
 sed -i -e "s/your_database_user/${DBUSER_EXIST}/g" .env
 sed -i -e "s/your_database_password/${DBPASSWORD_EXIST}/g" .env
 sed -i -e "s/insert_your_secret_key/${SECRET_KEY}/g" .env
 sed -i -e "s/False/True/g" .env
 sed -i -e "s/192.168.56.101/*/g" .env
+
+## Django initial setting
+python3 manage.py makemigrations exploit reputation threat threat_hunter twitter twitter_hunter news news_hunter vuln
+python3 manage.py migrate
 
 ## Redis install
 yum install redis -y
@@ -178,8 +179,8 @@ sed -i -e "s/YOUR_DB_USER/exist/g" -e "s/YOUR_DB_PASSWORD/${DBPASSWORD_EXIST}/g"
 yum install ipa-gothic-fonts ipa-pgothic-fonts -y
 fc-cache -f
 
-## EXIST Service
-cat <<EOL >> /etc/systemd/system/exist.service
+## Make EXIST service
+cat <<"EOL" >> /etc/systemd/system/exist.service
 [Unit]
 Description = EXIST
 After = celery.service
@@ -196,10 +197,13 @@ Restart=on-failure
 WantedBy=multi-user.target
 EOL
 
-
 ## Start EXIST 
-systemctl start exist.service
 systemctl enable exist.service
 
+echo ""
+echo "------------------------------------------------"
+echo "Please execute [ systemctl start exist.service ]"
+echo ""
+echo ""
 echo "Admin (root) DB Password: ${DBPASSWORD_ADMIN}"
 echo "User (exist) DB Password: ${DBPASSWORD_EXIST}"
