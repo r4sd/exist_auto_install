@@ -56,7 +56,7 @@ yum remove tcl expect -y
 systemctl restart mariadb.service
 systemctl status mariadb.service
 mysql -u ${DBUSER_ADMIN} -p${DBPASSWORD_ADMIN} -e "create database intelligence_db;"
-mysql -u ${DBUSER_ADMIN} -p${DBPASSWORD_ADMIN} -e "create user '${DBNAME}'@'${DBHOST}' identified by '${DBPASSWORD_EXIST}';"
+mysql -u ${DBUSER_ADMIN} -p${DBPASSWORD_ADMIN} -e "create user '${DBNAME}'@'%' identified by '${DBPASSWORD_EXIST}';"
 mysql -u ${DBUSER_ADMIN} -p${DBPASSWORD_ADMIN} -e "grant ALL on intelligence_db.* to ${DBNAME};"
 
 
@@ -69,11 +69,6 @@ cd /opt/exist
 pip install -r requirements.txt
 
 ## Change settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_NAME', 'intelligence_db')/'intelligence_db'/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_USER'),/'exist'/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_PASSWORD')/${DBPASSWORD_EXIST}/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_HOST', 'localhost')/'${DBHOST}'/g" intelligence/settings.py
-sed -i -e "s/os.environ.get('EXIST_DB_PORT', '3306')/'3306'/g" intelligence/settings.py
 sed -i -e "s/\"SET CHARACTER SET utf8mb4;\"/\"SET CHARACTER SET utf8mb4;\"\n                            \"SET sql_mode='STRICT_TRANS_TABLES';\"/g" intelligence/settings.py
 
 ## Django initial setting
